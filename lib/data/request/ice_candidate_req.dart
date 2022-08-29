@@ -10,14 +10,16 @@ class IceCandidateReq {
   final String? relayType;
   final String srcID;
   final String desID;
+  final String roomID;
   final IceCandidate iceCandidate;
 
   const IceCandidateReq({
     this.type = 'relay',
-    this.relayType = 'sessionDescription',
+    this.relayType = 'ICECandidate',
     required this.srcID,
     required this.desID,
-    required this.iceCandidate
+    required this.iceCandidate,
+    required this.roomID,
   });
 
   factory IceCandidateReq.fromJson(Map<String, dynamic> json) =>

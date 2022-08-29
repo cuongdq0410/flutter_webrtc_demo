@@ -28,6 +28,7 @@ class _CallSampleState extends State<CallSample> {
   RTCVideoRenderer _remoteRenderer = RTCVideoRenderer();
   bool _inCalling = false;
   Session? _session;
+  bool isMute = false;
 
   late SharedPreferences _prefs;
 
@@ -172,11 +173,11 @@ class _CallSampleState extends State<CallSample> {
         return AlertDialog(
           title: Text("Accept Call?"),
           actions: <Widget>[
-            TextButton(
+            ElevatedButton(
               child: Text("Reject"),
               onPressed: () => Navigator.of(context).pop(false),
             ),
-            TextButton(
+            ElevatedButton(
               child: Text("Accept"),
               onPressed: () {
                 Navigator.of(context).pop(true);
@@ -195,7 +196,7 @@ class _CallSampleState extends State<CallSample> {
         return AlertDialog(
           title: Text("Calling"),
           actions: <Widget>[
-            TextButton(
+            ElevatedButton(
               child: Text("Cancel"),
               onPressed: () {
                 Navigator.of(context).pop(false);
@@ -239,6 +240,9 @@ class _CallSampleState extends State<CallSample> {
 
   _muteMic() {
     widget.signaling.muteMic();
+    setState(() {
+      isMute = !isMute;
+    });
   }
 
   @override
@@ -259,23 +263,27 @@ class _CallSampleState extends State<CallSample> {
           ? SizedBox(
               width: 200.0,
               child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    FloatingActionButton(
-                      child: const Icon(Icons.switch_camera),
-                      onPressed: _switchCamera,
-                    ),
-                    FloatingActionButton(
-                      onPressed: _hangUp,
-                      tooltip: 'Hangup',
-                      child: Icon(Icons.call_end),
-                      backgroundColor: Colors.pink,
-                    ),
-                    FloatingActionButton(
-                      child: const Icon(Icons.mic_off),
-                      onPressed: _muteMic,
-                    )
-                  ]))
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  FloatingActionButton(
+                    child: const Icon(Icons.switch_camera),
+                    onPressed: _switchCamera,
+                  ),
+                  FloatingActionButton(
+                    onPressed: _hangUp,
+                    tooltip: 'Hangup',
+                    child: Icon(Icons.call_end),
+                    backgroundColor: Colors.pink,
+                  ),
+                  FloatingActionButton(
+                    child: isMute
+                        ? const Icon(Icons.mic_off)
+                        : const Icon(Icons.mic),
+                    onPressed: _muteMic,
+                  )
+                ],
+              ),
+            )
           : null,
       body: _inCalling
           ? OrientationBuilder(

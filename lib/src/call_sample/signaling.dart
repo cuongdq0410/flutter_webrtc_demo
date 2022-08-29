@@ -155,6 +155,7 @@ class Signaling {
       media: media,
       screenSharing: useScreen,
       selfId: selfId,
+      roomId: roomId,
     );
     _sessions[sessionId] = session;
     if (media == 'data') {
@@ -296,6 +297,7 @@ class Signaling {
                       media: media,
                       screenSharing: false,
                       selfId: selfId,
+                      roomId: sessionDescription.roomId ?? '',
                     );
                     _sessions[sessionId] = newSession;
                     await newSession.pc?.setRemoteDescription(
@@ -383,7 +385,6 @@ class Signaling {
   }
 
   Future<MediaStream> createStream(String media, bool userScreen) async {
-
     final Map<String, dynamic> mediaConstraints = {
       'audio': userScreen ? false : true,
       'video': userScreen
@@ -414,6 +415,7 @@ class Signaling {
     required String sessionId,
     required String media,
     required bool screenSharing,
+    required String roomId,
   }) async {
     var newSession = session ?? Session(sid: sessionId, pid: peerId);
     if (media != 'data')
@@ -500,10 +502,11 @@ class Signaling {
       // This delay is needed to allow enough time to try an ICE candidate
       // before skipping to the next one. 1 second is just an heuristic value
       // and should be thoroughly tested in your own environment.
-      await Future.delayed(
-        const Duration(seconds: 1),
-        () => AppRepo.onIceCandidate(
+      await Future.delayed(const Duration(seconds: 1), () {
+        print('==================== onIceCandidate =================');
+        AppRepo.onIceCandidate(
           IceCandidateReq(
+            roomID: roomId,
             srcID: selfId,
             desID: peerId,
             iceCandidate: IceCandidate(
@@ -513,8 +516,8 @@ class Signaling {
               sessionId: sessionId,
             ),
           ),
-        ),
-      );
+        );
+      });
     };
 
     pc.onIceConnectionState = (state) {};
@@ -556,8 +559,7 @@ class Signaling {
       Session session, String media, String roomId, String selfId,
       {required String sessionId}) async {
     try {
-      RTCSessionDescription s =
-          await session.pc!.createOffer({'offerToReceiveVideo': 1});
+      RTCSessionDescription s = await session.pc!.createOffer({});
       await session.pc!.setLocalDescription(s);
       await AppRepo.createOffer(
         OfferReq(
@@ -567,6 +569,7 @@ class Signaling {
             sdp: s.sdp,
             type: s.type,
             sessionId: sessionId,
+            roomId: roomId,
           ),
           roomID: roomId,
         ),
